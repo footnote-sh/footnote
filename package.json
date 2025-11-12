@@ -1,0 +1,20 @@
+{
+  "name": "@footnote/cli",
+  "version": "0.0.1",
+  "description": "Main thought (not the footnotes).",
+  "main": "index.js",
+  "keywords": [
+    "adhd",
+    "productivity",
+    "focus",
+    "cli",
+    "developer-tools"
+  ],
+  "author": "J.N. Choi <jn@footnote.sh>",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/footnote-sh/footnote"
+  },
+  "homepage": "https://footnote.sh"
+}
