@@ -35,13 +35,14 @@ export interface Intervention {
   request: string
   reasoning?: string
   options: InterventionOption[]
+  formattedMessage?: string // Fully formatted intervention message with context
 }
 
 export interface InterventionOption {
   id: string
   label: string
   description?: string
-  action: 'refocus' | 'capture' | 'find_fun' | 'override'
+  action: 'refocus' | 'capture' | 'find_fun' | 'override' | 'timebox'
 }
 
 export interface CaptureRequest {
