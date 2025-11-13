@@ -23,17 +23,14 @@ export class NotificationManager {
       const title = this.getTitle(intervention.action)
       const message = intervention.message
 
-      // Show notification
+      // Show simple notification (avoiding JSON parse errors from complex actions)
       notifier.notify(
         {
           title,
           message,
           sound: true,
-          wait: true,
-          timeout: 30, // 30 seconds
-          closeLabel: 'Continue anyway',
-          actions: ['Return to focus', 'Capture as footnote'],
-          dropdownLabel: 'More options',
+          timeout: 10, // 10 seconds
+          subtitle: `Your focus: ${commitment}`,
         },
         (err, response, metadata) => {
           if (err) {
@@ -42,27 +39,9 @@ export class NotificationManager {
             return
           }
 
-          // Handle user response
-          if (metadata?.activationType === 'actionClicked') {
-            const actionIndex = metadata.activationValue
-
-            if (actionIndex === '0') {
-              // Return to focus
-              resolve({ type: 'complied' })
-            } else if (actionIndex === '1') {
-              // Capture as footnote
-              resolve({ type: 'complied', captureAsFootnote: true })
-            } else {
-              // Closed or dismissed
-              resolve({ type: 'ignored' })
-            }
-          } else if (metadata?.activationType === 'closeButtonClicked') {
-            // Continue anyway
-            resolve({ type: 'overrode' })
-          } else {
-            // Timeout or other dismissal
-            resolve({ type: 'ignored' })
-          }
+          // For now, always resolve as ignored since we don't have interactive buttons
+          // TODO: Add proper action buttons once node-notifier config is fixed
+          resolve({ type: 'ignored' })
         }
       )
     })
