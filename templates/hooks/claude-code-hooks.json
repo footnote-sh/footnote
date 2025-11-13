@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "UserPromptSubmit": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://localhost:3040/check-focus",
+        "-H", "Content-Type: application/json",
+        "-d", "{\"request\": \"$PROMPT\", \"context\": {\"current_file\": \"$FILE\", \"git_branch\": \"$GIT_BRANCH\"}, \"source\": \"claude-code\"}",
+        "-s"
+      ]
+    }
+  }
+}
