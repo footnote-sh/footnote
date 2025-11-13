@@ -34,6 +34,10 @@ async function main() {
   const ppDetector = new ProductiveProcrastinationDetector()
   const interventionTrigger = new InterventionTrigger()
 
+  // Import ActivityLogger to access recent activity
+  const { ActivityLogger } = await import('./app-watcher/ActivityLogger.js')
+  const activityLogger = new ActivityLogger()
+
   // Initialize app watcher
   const appWatcher = new AppWatcher({
     pollIntervalMs: 5000, // 5 seconds
@@ -66,8 +70,8 @@ async function main() {
         commitment.mainThought
       )
 
-      // Get recent activity for pattern detection
-      const recentActivity: any[] = [] // TODO: Get from ActivityLogger
+      // Get recent activity for pattern detection (last 2 hours)
+      const recentActivity = activityLogger.getRecentActivity(2)
 
       // Detect patterns
       const pattern = patternAnalyzer.analyzeActivity({
@@ -77,7 +81,7 @@ async function main() {
 
       // Check for productive procrastination
       const ppPattern = ppDetector.detectProductiveProcrastination(
-        recentActivity as any,
+        recentActivity,
         commitment.mainThought
       )
 

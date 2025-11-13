@@ -10,7 +10,7 @@ import { InterventionEngine } from '../../intervention/InterventionEngine.js'
 import { DatabaseManager } from './DatabaseManager.js'
 import { NotificationManager } from '../notifications/NotificationManager.js'
 
-interface TriggerThresholds {
+export interface TriggerThresholds {
   planningLoop: { occurrences: number; cooldownMs: number }
   researchRabbitHole: { durationSeconds: number; cooldownMs: number }
   contextSwitching: { switches: number; cooldownMs: number }
@@ -26,31 +26,39 @@ export class InterventionTrigger {
 
   private thresholds: TriggerThresholds = {
     planningLoop: {
-      occurrences: 3,
-      cooldownMs: 60 * 60 * 1000, // 1 hour
+      occurrences: 2, // Catch it early - 2 planning sessions in a row is a pattern
+      cooldownMs: 20 * 60 * 1000, // 20 minutes
     },
     researchRabbitHole: {
-      durationSeconds: 60 * 60, // 1 hour
-      cooldownMs: 2 * 60 * 60 * 1000, // 2 hours
+      durationSeconds: 15 * 60, // 15 minutes - rabbit holes happen fast!
+      cooldownMs: 30 * 60 * 1000, // 30 minutes
     },
     contextSwitching: {
-      switches: 20,
-      cooldownMs: 30 * 60 * 1000, // 30 minutes
+      switches: 10, // 10 app switches in recent activity is excessive
+      cooldownMs: 15 * 60 * 1000, // 15 minutes
     },
     offTrack: {
-      durationSeconds: 10 * 60, // 10 minutes
-      cooldownMs: 30 * 60 * 1000, // 30 minutes
+      durationSeconds: 3 * 60, // 3 minutes - catch drift early!
+      cooldownMs: 15 * 60 * 1000, // 15 minutes
     },
     productiveProcrastination: {
-      durationSeconds: 15 * 60, // 15 minutes
-      cooldownMs: 60 * 60 * 1000, // 1 hour
+      durationSeconds: 5 * 60, // 5 minutes of "productive" work that's not your focus
+      cooldownMs: 20 * 60 * 1000, // 20 minutes
     },
   }
 
-  constructor(dbPath?: string) {
+  constructor(dbPath?: string, customThresholds?: Partial<TriggerThresholds>) {
     this.interventionEngine = new InterventionEngine()
     this.db = new DatabaseManager(dbPath)
     this.notificationManager = new NotificationManager()
+
+    // Override default thresholds with custom ones if provided
+    if (customThresholds) {
+      this.thresholds = {
+        ...this.thresholds,
+        ...customThresholds,
+      }
+    }
   }
 
   /**
