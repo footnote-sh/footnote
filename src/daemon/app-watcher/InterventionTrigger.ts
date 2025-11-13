@@ -26,24 +26,24 @@ export class InterventionTrigger {
 
   private thresholds: TriggerThresholds = {
     planningLoop: {
-      occurrences: 2, // Catch it early - 2 planning sessions in a row is a pattern
-      cooldownMs: 20 * 60 * 1000, // 20 minutes
+      occurrences: 1, // TESTING: Immediate trigger - even 1 planning session
+      cooldownMs: 2 * 60 * 1000, // TESTING: 2 minutes cooldown
     },
     researchRabbitHole: {
-      durationSeconds: 15 * 60, // 15 minutes - rabbit holes happen fast!
-      cooldownMs: 30 * 60 * 1000, // 30 minutes
+      durationSeconds: 60, // TESTING: 1 minute - triggers fast for testing!
+      cooldownMs: 2 * 60 * 1000, // TESTING: 2 minutes cooldown
     },
     contextSwitching: {
-      switches: 10, // 10 app switches in recent activity is excessive
-      cooldownMs: 15 * 60 * 1000, // 15 minutes
+      switches: 3, // TESTING: 3 app switches triggers intervention
+      cooldownMs: 2 * 60 * 1000, // TESTING: 2 minutes cooldown
     },
     offTrack: {
-      durationSeconds: 3 * 60, // 3 minutes - catch drift early!
-      cooldownMs: 15 * 60 * 1000, // 15 minutes
+      durationSeconds: 30, // TESTING: 30 seconds off-track = instant intervention!
+      cooldownMs: 2 * 60 * 1000, // TESTING: 2 minutes cooldown
     },
     productiveProcrastination: {
-      durationSeconds: 5 * 60, // 5 minutes of "productive" work that's not your focus
-      cooldownMs: 20 * 60 * 1000, // 20 minutes
+      durationSeconds: 30, // TESTING: 30 seconds productive but off-focus
+      cooldownMs: 2 * 60 * 1000, // TESTING: 2 minutes cooldown
     },
   }
 
