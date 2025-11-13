@@ -37,7 +37,8 @@ async function startDaemon(options?: { showNextSteps?: boolean }): Promise<void>
 
   try {
     // Path to the main daemon entry point (includes hook server + app watcher)
-    const daemonPath = join(__dirname, '../../daemon/index.js')
+    // After bundling, files are in dist/cli/index.js and dist/daemon/index.js
+    const daemonPath = join(__dirname, '../daemon/index.js')
 
     // Start the daemon as a background process
     const child = spawn('node', [daemonPath], {
