@@ -139,16 +139,18 @@ export class DatabaseManager {
    * Get recent activity (last N hours)
    */
   getRecentActivity(hours: number = 2): ActivityRecordDB[] {
+    const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
+
     const stmt = this.db.prepare(`
       SELECT
         id, timestamp, app, window_title, url, duration,
         category, alignment, commitment, created_at
       FROM activity_records
-      WHERE timestamp >= datetime('now', '-${hours} hours')
+      WHERE timestamp >= @cutoffTime
       ORDER BY timestamp DESC
     `)
 
-    return stmt.all() as ActivityRecordDB[]
+    return stmt.all({ cutoffTime }) as ActivityRecordDB[]
   }
 
   /**
@@ -341,9 +343,7 @@ export class DatabaseManager {
   /**
    * Get time spent per category (today)
    */
-  getTimeByCategory(
-    date?: string
-  ): Array<{
+  getTimeByCategory(date?: string): Array<{
     category: string
     alignment: string
     total_seconds: number

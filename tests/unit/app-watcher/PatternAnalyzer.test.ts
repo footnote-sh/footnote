@@ -176,7 +176,7 @@ describe('PatternAnalyzer', () => {
       const result = analyzer.detectContextSwitching(activities)
 
       expect(result.patternType).toBe('context_switching')
-      expect(result.confidence).toBeGreaterThan(0.5)
+      expect(result.confidence).toBeGreaterThanOrEqual(0.5)
       expect(result.evidence.frequency).toBeGreaterThan(20)
     })
 

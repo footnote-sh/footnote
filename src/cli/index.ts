@@ -13,6 +13,7 @@ import { captureCommand } from './commands/capture.js'
 import { checkCommand } from './commands/check.js'
 import { daemonCommand } from './commands/daemon.js'
 import { createHooksCommand } from './commands/hooks/install.js'
+import { permissionsCommand } from './commands/permissions.js'
 
 const program = new Command()
 const stateManager = new StateManager()
@@ -56,6 +57,9 @@ program
 
 // hooks - Hook management
 program.addCommand(createHooksCommand())
+
+// permissions - Accessibility permissions
+program.addCommand(permissionsCommand)
 
 // init - Initialize/onboarding (placeholder for now)
 program

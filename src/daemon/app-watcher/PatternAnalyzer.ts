@@ -110,7 +110,7 @@ export class PatternAnalyzer {
       confidence += 0.3
     }
 
-    if (confidence > 0.5) {
+    if (confidence >= 0.5) {
       return {
         patternType: 'research_rabbit_hole',
         confidence,
@@ -162,7 +162,7 @@ export class PatternAnalyzer {
       confidence += 0.2
     }
 
-    if (confidence > 0.5) {
+    if (confidence >= 0.5) {
       return {
         patternType: 'context_switching',
         confidence,
@@ -197,36 +197,55 @@ export class PatternAnalyzer {
 
     if (researchActivities.length === 0) return null
 
-    let sessionActivities = [researchActivities[0]]
-    let totalDuration = 0
+    let bestSession: ActivityRecord[] = []
+    let bestDuration = 0
+    let currentSession = [researchActivities[0]]
 
     for (let i = 1; i < researchActivities.length; i++) {
       const prev = researchActivities[i - 1]
       const curr = researchActivities[i]
       const gap = this.timeDiff(prev.timestamp, curr.timestamp)
 
-      if (gap < 5 * 60) {
-        // Continuous session (< 5 min gap)
-        sessionActivities.push(curr)
-        totalDuration += gap
+      if (gap <= 5 * 60) {
+        // Continuous session (<= 5 min gap)
+        currentSession.push(curr)
       } else {
-        // Session break
-        if (totalDuration > 30 * 60) {
-          // Found a long session
-          break
+        // Session break - calculate duration of current session
+        if (currentSession.length > 0) {
+          const sessionDuration = this.timeDiff(
+            currentSession[0].timestamp,
+            currentSession[currentSession.length - 1].timestamp
+          )
+          if (sessionDuration > bestDuration) {
+            bestSession = currentSession
+            bestDuration = sessionDuration
+          }
         }
-        sessionActivities = [curr]
-        totalDuration = 0
+        currentSession = [curr]
       }
     }
 
+    // Check final session
+    if (currentSession.length > 0) {
+      const sessionDuration = this.timeDiff(
+        currentSession[0].timestamp,
+        currentSession[currentSession.length - 1].timestamp
+      )
+      if (sessionDuration > bestDuration) {
+        bestSession = currentSession
+        bestDuration = sessionDuration
+      }
+    }
+
+    if (bestSession.length === 0) return null
+
     const urls = Array.from(
-      new Set(sessionActivities.map((a) => a.url).filter((url): url is string => !!url))
+      new Set(bestSession.map((a) => a.url).filter((url): url is string => !!url))
     )
 
     return {
-      duration: totalDuration,
-      activities: sessionActivities,
+      duration: bestDuration,
+      activities: bestSession,
       urls,
     }
   }
