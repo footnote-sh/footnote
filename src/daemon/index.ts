@@ -106,6 +106,16 @@ async function main() {
     }
   })
 
+  // Listen for sleep/wake events
+  appWatcher.on('sleep-detected', (sleepTime) => {
+    console.log(`💤 Sleep detected at ${sleepTime.toLocaleString()}`)
+  })
+
+  appWatcher.on('wake-detected', (wakeTime, sleepDuration) => {
+    const minutes = (sleepDuration / 1000 / 60).toFixed(1)
+    console.log(`☀️  Wake detected at ${wakeTime.toLocaleString()} (slept for ${minutes} minutes)`)
+  })
+
   // Listen for errors
   appWatcher.on('error', (error) => {
     console.error('App watcher error:', error)

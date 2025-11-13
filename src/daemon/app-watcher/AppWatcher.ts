@@ -11,6 +11,8 @@ import { EventEmitter } from 'events'
 export interface AppWatcherEvents {
   'activity-changed': (activity: any) => void
   'pattern-detected': (pattern: any) => void
+  'sleep-detected': (sleepTime: Date) => void
+  'wake-detected': (wakeTime: Date, sleepDuration: number) => void
   error: (error: Error) => void
   started: () => void
   stopped: () => void
@@ -30,6 +32,8 @@ export class AppWatcher extends EventEmitter {
   private config: AppWatcherConfig
   private pollInterval: NodeJS.Timeout | null = null
   private isRunning: boolean = false
+  private lastPollTime: number | null = null
+  private readonly SLEEP_DETECTION_THRESHOLD_MS = 60000 // 60 seconds gap indicates sleep
 
   constructor(config?: Partial<AppWatcherConfig>, dbPath?: string) {
     super()
@@ -124,6 +128,35 @@ export class AppWatcher extends EventEmitter {
    */
   private async poll(): Promise<void> {
     try {
+      const now = Date.now()
+
+      // Detect sleep/wake cycles
+      if (this.lastPollTime !== null) {
+        const timeSinceLastPoll = now - this.lastPollTime
+        const expectedInterval = this.config.pollIntervalMs
+
+        // If time gap is much larger than expected, assume system was asleep
+        if (timeSinceLastPoll > this.SLEEP_DETECTION_THRESHOLD_MS) {
+          const sleepDuration = timeSinceLastPoll - expectedInterval
+          const sleepTime = new Date(this.lastPollTime + expectedInterval)
+          const wakeTime = new Date(now)
+
+          console.log(
+            `Sleep detected: ${(sleepDuration / 1000 / 60).toFixed(1)} minutes ` +
+              `(${sleepTime.toISOString()} to ${wakeTime.toISOString()})`
+          )
+
+          // Finalize any current activity before sleep
+          this.activityLogger.finalizeCurrentActivity()
+
+          // Emit sleep/wake events
+          this.emit('sleep-detected', sleepTime)
+          this.emit('wake-detected', wakeTime, sleepDuration)
+        }
+      }
+
+      this.lastPollTime = now
+
       // Get current activity from platform
       const activity = await this.platformWatcher.getCurrentActivity()
 
