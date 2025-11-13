@@ -31,8 +31,8 @@ class MockAnalyzer extends BaseAnalyzer {
     const requestLower = request.toLowerCase()
 
     // Extract key terms from commitment
-    const commitmentWords = commitmentLower.split(/\s+/).filter((w) => w.length > 3)
-    const hasOverlap = commitmentWords.some((word) => requestLower.includes(word))
+    const commitmentWords = commitmentLower.split(/\s+/).filter((w: string) => w.length > 3)
+    const hasOverlap = commitmentWords.some((word: string) => requestLower.includes(word))
 
     if (hasOverlap) {
       return {
