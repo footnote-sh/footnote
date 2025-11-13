@@ -1,0 +1,36 @@
+name: Corporate Developer
+description: For developers in 9-5 corporate environments with many meetings
+
+schedule:
+  work_hours: "9am-5pm"
+  late_night_alert: "midnight"
+  morning_triage: "9:15am"
+  deep_work_window: "9am-11am"
+
+weekly_rhythm:
+  monday: "Sprint planning & meetings"
+  tuesday: "Feature development"
+  wednesday: "Deep work (protect this day)"
+  thursday: "Code review & collaboration"
+  friday: "Sprint wrap-up & documentation"
+
+priorities:
+  - "Sprint commitments"
+  - "Code reviews for team"
+  - "Technical debt tickets"
+
+interventions:
+  late_night_coding: true
+  shiny_object: false
+  completion_gap: false
+  wednesday_violation: true
+  hyperfocus_alert: false
+
+integrations:
+  task_manager: local
+  memory: null
+  calendar: null
+
+privacy:
+  analytics: false
+  cloud_sync: false

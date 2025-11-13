@@ -1,0 +1,36 @@
+name: Night Owl
+description: For developers who do deep work in evenings/nights
+
+schedule:
+  work_hours: "8pm-2am"
+  late_night_alert: "4am"
+  morning_triage: "8:30pm"
+  deep_work_window: "9pm-1am"
+
+weekly_rhythm:
+  monday: "Planning & setup"
+  tuesday: "Deep coding session"
+  wednesday: "Feature development"
+  thursday: "Testing & refinement"
+  friday: "Code review & documentation"
+
+priorities:
+  - "Ship current feature"
+  - "Review & merge PRs"
+  - "Technical debt cleanup"
+
+interventions:
+  late_night_coding: true
+  shiny_object: false
+  completion_gap: false
+  wednesday_violation: false
+  hyperfocus_alert: false
+
+integrations:
+  task_manager: local
+  memory: null
+  calendar: null
+
+privacy:
+  analytics: false
+  cloud_sync: false
