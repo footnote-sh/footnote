@@ -1,0 +1,54 @@
+{
+  "name": "@footnote/cli",
+  "version": "0.1.0",
+  "description": "ADHD-friendly focus toolkit for developers",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "footnote": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "adhd",
+    "productivity",
+    "focus",
+    "cli",
+    "developer-tools"
+  ],
+  "author": "J.N. Choi <jn@footnote.sh>",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/footnote-sh/footnote"
+  },
+  "homepage": "https://footnote.sh",
+  "files": [
+    "dist",
+    "../profiles"
+  ],
+  "dependencies": {
+    "commander": "^12.0.0",
+    "inquirer": "^9.2.12",
+    "chalk": "^5.3.0",
+    "boxen": "^7.1.1",
+    "sql.js": "^1.10.3",
+    "js-yaml": "^4.1.0",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.14.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.5.0",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
