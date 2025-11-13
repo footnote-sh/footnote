@@ -30,7 +30,9 @@ export async function daemonCommand(action: string): Promise<void> {
   }
 }
 
-async function startDaemon(): Promise<void> {
+async function startDaemon(options?: { showNextSteps?: boolean }): Promise<void> {
+  const showNextSteps = options?.showNextSteps ?? true
+
   console.log(chalk.yellow('\n🚀 Starting Footnote daemon...\n'))
 
   try {
@@ -50,14 +52,23 @@ async function startDaemon(): Promise<void> {
     console.log(chalk.dim(`  → Hook Server: http://localhost:3040`))
     console.log(chalk.dim(`  → App Watcher: Polling every 5s\n`))
 
-    console.log(chalk.dim('Next steps:'))
-    console.log(chalk.cyan('  footnote focus'))
-    console.log(chalk.dim('  Set your main commitment, then the daemon will start monitoring\n'))
+    if (showNextSteps) {
+      console.log(chalk.dim('Next steps:'))
+      console.log(chalk.cyan('  footnote focus'))
+      console.log(chalk.dim('  Set your main commitment, then the daemon will start monitoring\n'))
+    }
   } catch (error) {
     console.log(chalk.red('\n✗ Failed to start daemon:'))
     console.log(chalk.dim((error as Error).message))
     process.exit(1)
   }
+}
+
+/**
+ * Export for use by other commands
+ */
+export async function startDaemonSilently(): Promise<void> {
+  await startDaemon({ showNextSteps: false })
 }
 
 async function stopDaemon(): Promise<void> {
