@@ -34,26 +34,25 @@ async function startDaemon(): Promise<void> {
   console.log(chalk.yellow('\n🚀 Starting Footnote daemon...\n'))
 
   try {
-    // Path to the hook server
-    const serverPath = join(__dirname, '../../daemon/hook-server/index.js')
+    // Path to the main daemon entry point (includes hook server + app watcher)
+    const daemonPath = join(__dirname, '../../daemon/index.js')
 
-    // Start the server as a background process
-    const child = spawn('node', [serverPath], {
+    // Start the daemon as a background process
+    const child = spawn('node', [daemonPath], {
       detached: true,
-      stdio: 'ignore',
+      stdio: 'inherit', // Show daemon output
     })
 
     child.unref()
 
-    console.log(chalk.green('✓ Hook server started'))
-    console.log(chalk.dim(`  → http://localhost:3040`))
-    console.log(chalk.dim(`  → PID: ${child.pid}\n`))
-
-    console.log(chalk.yellow('🚧 App watcher coming soon\n'))
+    console.log(chalk.green('\n✓ Daemon started'))
+    console.log(chalk.dim(`  → PID: ${child.pid}`))
+    console.log(chalk.dim(`  → Hook Server: http://localhost:3040`))
+    console.log(chalk.dim(`  → App Watcher: Polling every 5s\n`))
 
     console.log(chalk.dim('Next steps:'))
-    console.log(chalk.cyan('  footnote hooks install'))
-    console.log(chalk.dim('  (or specify platform: footnote hooks install claude-code)\n'))
+    console.log(chalk.cyan('  footnote focus'))
+    console.log(chalk.dim('  Set your main commitment, then the daemon will start monitoring\n'))
   } catch (error) {
     console.log(chalk.red('\n✗ Failed to start daemon:'))
     console.log(chalk.dim((error as Error).message))
@@ -65,25 +64,32 @@ async function stopDaemon(): Promise<void> {
   console.log(chalk.yellow('\n🛑 Stopping Footnote daemon...\n'))
 
   try {
-    // Find and kill the hook server process
     const { exec } = await import('child_process')
     const { promisify } = await import('util')
     const execAsync = promisify(exec)
 
+    let stopped = false
+
     try {
-      // Find process by port 3040
+      // Find process by port 3040 (hook server runs on this port)
       const { stdout } = await execAsync('lsof -ti:3040')
       const pid = stdout.trim()
 
       if (pid) {
+        // Kill the parent daemon process (which includes hook server and app watcher)
         await execAsync(`kill ${pid}`)
-        console.log(chalk.green('✓ Hook server stopped'))
-        console.log(chalk.dim(`  → PID: ${pid}\n`))
-      } else {
-        console.log(chalk.yellow('Hook server not running\n'))
+        console.log(chalk.green('✓ Daemon stopped'))
+        console.log(chalk.dim(`  → PID: ${pid}`))
+        console.log(chalk.dim('  → Hook Server: Stopped'))
+        console.log(chalk.dim('  → App Watcher: Stopped\n'))
+        stopped = true
       }
     } catch (error) {
-      console.log(chalk.yellow('Hook server not running\n'))
+      // Process not running
+    }
+
+    if (!stopped) {
+      console.log(chalk.yellow('Daemon not running\n'))
     }
   } catch (error) {
     console.log(chalk.red('\n✗ Failed to stop daemon:'))
@@ -100,15 +106,21 @@ async function statusDaemon(): Promise<void> {
     const { promisify } = await import('util')
     const execAsync = promisify(exec)
 
-    // Check hook server
+    let isRunning = false
+
+    // Check hook server (indicator that daemon is running)
     try {
       const { stdout } = await execAsync('lsof -ti:3040')
       const pid = stdout.trim()
 
       if (pid) {
-        console.log(chalk.green('✓ Hook server: Running'))
+        isRunning = true
+        console.log(chalk.green('✓ Daemon: Running'))
+        console.log(chalk.dim(`  → PID: ${pid}\n`))
+
+        // Hook Server status
+        console.log(chalk.green('✓ Hook Server: Running'))
         console.log(chalk.dim(`  → http://localhost:3040`))
-        console.log(chalk.dim(`  → PID: ${pid}`))
 
         // Try to get health status
         try {
@@ -124,17 +136,36 @@ async function statusDaemon(): Promise<void> {
         } catch {
           // Can't reach health endpoint
         }
-      } else {
-        console.log(chalk.red('✗ Hook server: Not running'))
-        console.log(chalk.dim('  → Run: footnote daemon start'))
+
+        console.log()
+
+        // App Watcher status (if daemon is running, app watcher is running)
+        console.log(chalk.green('✓ App Watcher: Running'))
+        console.log(chalk.dim('  → Polling every 5 seconds'))
+        console.log(chalk.dim('  → Database: ~/.footnote/activity.db'))
+
+        // Check permissions
+        const { PermissionChecker } = await import('../../daemon/permissions/PermissionChecker.js')
+        const checker = new PermissionChecker()
+        const hasPermissions = await checker.checkAccessibility()
+
+        if (hasPermissions) {
+          console.log(chalk.green('  → Permissions: ✓ Granted'))
+        } else {
+          console.log(chalk.yellow('  → Permissions: ⚠ Not granted'))
+          console.log(chalk.dim('  → Run: footnote permissions setup'))
+        }
       }
     } catch (error) {
-      console.log(chalk.red('✗ Hook server: Not running'))
-      console.log(chalk.dim('  → Run: footnote daemon start'))
+      // Process not running
     }
 
-    console.log()
-    console.log(chalk.yellow('🚧 App watcher: Coming soon\n'))
+    if (!isRunning) {
+      console.log(chalk.red('✗ Daemon: Not running'))
+      console.log(chalk.dim('  → Run: footnote daemon start\n'))
+    } else {
+      console.log()
+    }
   } catch (error) {
     console.log(chalk.red('\n✗ Failed to check status:'))
     console.log(chalk.dim((error as Error).message))

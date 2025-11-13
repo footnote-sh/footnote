@@ -5,6 +5,8 @@
 
 import type { ActivitySnapshot, CommitmentAlignment } from '../../types/activity.js'
 import { AlignmentAnalyzer } from '../analysis/AlignmentAnalyzer.js'
+import type { CommitmentStore } from '../../state/CommitmentStore.js'
+import type { UserProfile } from '../../types/state.js'
 
 interface CacheEntry {
   alignment: CommitmentAlignment
@@ -14,10 +16,26 @@ interface CacheEntry {
 export class CommitmentMatcher {
   private cache: Map<string, CacheEntry> = new Map()
   private readonly CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
-  private alignmentAnalyzer: AlignmentAnalyzer
+  private alignmentAnalyzer: AlignmentAnalyzer | null = null
 
-  constructor() {
-    this.alignmentAnalyzer = new AlignmentAnalyzer()
+  constructor(
+    private commitmentStore?: CommitmentStore,
+    private profile?: UserProfile
+  ) {
+    // AlignmentAnalyzer will be created lazily when needed
+  }
+
+  /**
+   * Initialize analyzer (lazy initialization)
+   *
+   * NOTE: AlignmentAnalyzer is designed for hook requests (coding tasks with git context),
+   * not for real-time app activity monitoring. For now, we use keyword-based alignment
+   * which is faster and more appropriate for this use case.
+   */
+  private getAnalyzer(): AlignmentAnalyzer | null {
+    // Disable AI analysis for app watcher activities
+    // Use keyword-based alignment instead (faster and more appropriate)
+    return null
   }
 
   /**
@@ -38,12 +56,19 @@ export class CommitmentMatcher {
     // Extract context from activity
     const context = this.extractContext(activity)
 
+    const analyzer = this.getAnalyzer()
+
+    if (!analyzer) {
+      // No analyzer available, use keyword matching
+      return this.keywordBasedAlignment(activity, commitment)
+    }
+
     try {
       // Use AI-powered alignment analysis
-      const result = await this.alignmentAnalyzer.analyze({
+      const result = await analyzer.analyze({
         prompt: context.description,
         commitment,
-      })
+      } as any)
 
       const alignment = this.mapAnalysisResult(result)
 

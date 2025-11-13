@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  entry: ['src/cli/index.ts', 'src/daemon/hook-server/index.ts'],
+  entry: ['src/cli/index.ts', 'src/daemon/index.ts', 'src/daemon/hook-server/index.ts'],
   format: ['esm'],
   dts: true,
   splitting: false,
