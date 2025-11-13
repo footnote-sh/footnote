@@ -21,6 +21,11 @@ const profileStore = new ProfileStore(stateManager)
 
 program.name('footnote').description('Main thought (not the footnotes).').version('0.0.1')
 
+// Default to 'init' when no command provided
+if (process.argv.length === 2) {
+  process.argv.push('init')
+}
+
 // Check if onboarding needed
 if (!stateManager.isOnboardingCompleted() && process.argv[2] !== 'init') {
   console.log(chalk.yellow('\n👋 Welcome to Footnote!\n'))
