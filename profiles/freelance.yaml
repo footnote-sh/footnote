@@ -1,0 +1,36 @@
+name: Freelancer
+description: For freelancers with project-based, flexible schedules
+
+schedule:
+  work_hours: "10am-6pm"
+  late_night_alert: "2am"
+  morning_triage: "10am"
+  deep_work_window: "10am-2pm"
+
+weekly_rhythm:
+  monday: "Client communication & planning"
+  tuesday: "Project work"
+  wednesday: "Project work"
+  thursday: "Project work & deliverables"
+  friday: "Invoicing & admin"
+
+priorities:
+  - "Current client deliverable"
+  - "Project milestones"
+  - "Business development"
+
+interventions:
+  late_night_coding: true
+  shiny_object: false
+  completion_gap: false
+  wednesday_violation: false
+  hyperfocus_alert: false
+
+integrations:
+  task_manager: local
+  memory: null
+  calendar: null
+
+privacy:
+  analytics: false
+  cloud_sync: false

@@ -1,0 +1,36 @@
+name: Parent/Caregiver
+description: For founders/developers balancing work + family
+
+schedule:
+  work_hours: "9am-3pm"
+  late_night_alert: "1am"
+  morning_triage: "10:35am"
+  deep_work_window: "10:35am-3:45pm"
+
+weekly_rhythm:
+  monday: "Planning & batch creation"
+  tuesday: "Customer immersion"
+  wednesday: "Deep work (no meetings)"
+  thursday: "Execution & QA"
+  friday: "Demo day & reflection"
+
+priorities:
+  - "Core product feature"
+  - "Customer validation"
+  - "Weekly content"
+
+interventions:
+  late_night_coding: true
+  shiny_object: false
+  completion_gap: false
+  wednesday_violation: false
+  hyperfocus_alert: false
+
+integrations:
+  task_manager: local
+  memory: null
+  calendar: null
+
+privacy:
+  analytics: false
+  cloud_sync: false

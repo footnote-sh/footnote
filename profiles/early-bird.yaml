@@ -1,0 +1,36 @@
+name: Early Bird
+description: For developers with morning deep work sessions
+
+schedule:
+  work_hours: "6am-11am"
+  late_night_alert: "11pm"
+  morning_triage: "6:15am"
+  deep_work_window: "6:30am-10:30am"
+
+weekly_rhythm:
+  monday: "Weekly planning"
+  tuesday: "Feature development"
+  wednesday: "Deep work (no meetings)"
+  thursday: "Code review & collaboration"
+  friday: "Cleanup & documentation"
+
+priorities:
+  - "Complete current sprint work"
+  - "Review team PRs"
+  - "Technical improvements"
+
+interventions:
+  late_night_coding: true
+  shiny_object: false
+  completion_gap: false
+  wednesday_violation: false
+  hyperfocus_alert: false
+
+integrations:
+  task_manager: local
+  memory: null
+  calendar: null
+
+privacy:
+  analytics: false
+  cloud_sync: false
