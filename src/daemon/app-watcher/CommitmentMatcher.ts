@@ -7,6 +7,7 @@ import type { ActivitySnapshot, CommitmentAlignment } from '../../types/activity
 import { AlignmentAnalyzer } from '../analysis/AlignmentAnalyzer.js'
 import type { CommitmentStore } from '../../state/CommitmentStore.js'
 import type { UserProfile } from '../../types/state.js'
+import type { WorkContextTracker } from '../context/WorkContextTracker.js'
 
 interface CacheEntry {
   alignment: CommitmentAlignment
@@ -20,7 +21,8 @@ export class CommitmentMatcher {
 
   constructor(
     private commitmentStore?: CommitmentStore,
-    private profile?: UserProfile
+    private profile?: UserProfile,
+    private contextTracker?: WorkContextTracker
   ) {
     // AlignmentAnalyzer will be created lazily when needed
   }
@@ -198,6 +200,53 @@ export class CommitmentMatcher {
     activity: ActivitySnapshot,
     commitment: string
   ): CommitmentAlignment {
+    // Special handling for development tools - check if recent work matches commitment
+    if (this.isDevelopmentTool(activity.app)) {
+      // If we have context tracker, check if recent files/projects match commitment
+      if (this.contextTracker) {
+        const keywords = this.extractKeywords(commitment)
+        const hasRelevantWork = this.contextTracker.hasRelevantActivity(keywords)
+        const hasMatchingProject = this.contextTracker.hasMatchingProject(keywords)
+
+        if (hasRelevantWork && hasMatchingProject) {
+          return {
+            isAligned: true,
+            alignment: 'on_track',
+            confidence: 0.95,
+            reasoning: 'Development tool + project and recent work match commitment',
+          }
+        }
+
+        if (hasRelevantWork) {
+          return {
+            isAligned: true,
+            alignment: 'on_track',
+            confidence: 0.85,
+            reasoning: 'Development tool + recent work matches commitment',
+          }
+        }
+
+        // Has context but no matching work - likely wrong project
+        if (this.contextTracker.getContext().projectDirectories.length > 0) {
+          const currentProjects = this.contextTracker.getContext().projectDirectories.join(', ')
+          return {
+            isAligned: false,
+            alignment: 'productive_procrastination',
+            confidence: 0.8,
+            reasoning: `Working on different project(s): ${currentProjects}`,
+          }
+        }
+      }
+
+      // No context or no project info - assume on_track but lower confidence
+      return {
+        isAligned: true,
+        alignment: 'on_track',
+        confidence: 0.6,
+        reasoning: 'Development tool - assumed on_track (no context available)',
+      }
+    }
+
     const commitmentKeywords = this.extractKeywords(commitment)
     const activityText =
       `${activity.app} ${activity.windowTitle} ${activity.url || ''}`.toLowerCase()
@@ -228,6 +277,37 @@ export class CommitmentMatcher {
         reasoning: 'No significant keyword matches found',
       }
     }
+  }
+
+  /**
+   * Check if app is a development/work tool
+   * These apps often don't expose window/tab titles, so we trust they're work-related
+   */
+  private isDevelopmentTool(app: string): boolean {
+    const devTools = [
+      'code', // VS Code
+      'cursor', // Cursor
+      'stable', // Cursor stable
+      'warp', // Warp terminal
+      'iterm', // iTerm2
+      'terminal', // macOS Terminal
+      'vim',
+      'neovim',
+      'sublime',
+      'intellij',
+      'pycharm',
+      'webstorm',
+      'datagrip',
+      'docker',
+      'postman',
+      'insomnia',
+      'tableplus',
+      'sequel',
+      'figma', // Design tool
+    ]
+
+    const appLower = app.toLowerCase()
+    return devTools.some((tool) => appLower.includes(tool))
   }
 
   /**

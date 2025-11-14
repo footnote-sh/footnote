@@ -7,8 +7,10 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { StateManager } from '../../state/StateManager.js'
 import { CommitmentStore } from '../../state/CommitmentStore.js'
+import { WorkContextTracker } from '../context/WorkContextTracker.js'
 import { checkFocusRoute } from './routes/check-focus.js'
 import { captureRoute } from './routes/capture.js'
+import { trackActivityRoute } from './routes/track-activity.js'
 
 const DEFAULT_PORT = 3040
 const DEFAULT_HOST = '127.0.0.1' // localhost only for security
@@ -23,6 +25,7 @@ export class HookServer {
   private fastify: ReturnType<typeof Fastify>
   private stateManager: StateManager
   private commitmentStore: CommitmentStore
+  private contextTracker: WorkContextTracker
   private port: number
   private host: string
 
@@ -41,10 +44,18 @@ export class HookServer {
     // Initialize state management
     this.stateManager = new StateManager()
     this.commitmentStore = new CommitmentStore(this.stateManager)
+    this.contextTracker = new WorkContextTracker()
 
     this.setupPlugins()
     this.setupRoutes()
     this.setupErrorHandlers()
+  }
+
+  /**
+   * Get the work context tracker (for daemon integration)
+   */
+  getContextTracker(): WorkContextTracker {
+    return this.contextTracker
   }
 
   /**
@@ -105,6 +116,9 @@ export class HookServer {
 
     // Capture footnote endpoint
     this.fastify.post('/capture', captureRoute(this.stateManager, this.commitmentStore))
+
+    // Track activity endpoint (for Claude Code PostToolUse hooks)
+    this.fastify.post('/track-activity', trackActivityRoute(this.contextTracker))
 
     // 404 handler
     this.fastify.setNotFoundHandler((request: any, reply: any) => {

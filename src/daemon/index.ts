@@ -27,9 +27,12 @@ async function main() {
   const hookServer = await createHookServer({ port: 3040, host: '127.0.0.1' })
   setupGracefulShutdown(hookServer)
 
+  // Get context tracker from hook server
+  const contextTracker = hookServer.getContextTracker()
+
   // Initialize app watcher components
   const profile = profileStore.get()
-  const commitmentMatcher = new CommitmentMatcher(commitmentStore, profile)
+  const commitmentMatcher = new CommitmentMatcher(commitmentStore, profile, contextTracker)
   const patternAnalyzer = new PatternAnalyzer()
   const ppDetector = new ProductiveProcrastinationDetector()
   const interventionTrigger = new InterventionTrigger()
@@ -55,7 +58,7 @@ async function main() {
   // Listen for activity changes
   appWatcher.on('activity-changed', async (event) => {
     try {
-      const { activity, category } = event
+      const { activity } = event
 
       // Get current commitment
       const commitment = stateManager.getCurrentCommitment()
@@ -65,8 +68,19 @@ async function main() {
       }
 
       // Check alignment with commitment
-      const alignment = await commitmentMatcher.checkAlignment(
+      const alignmentResult = await commitmentMatcher.checkAlignment(
         activity as ActivitySnapshot,
+        commitment.mainThought
+      )
+
+      // Categorize activity
+      const category = commitmentMatcher.categorizeActivity(activity as ActivitySnapshot)
+
+      // Log activity with proper alignment and commitment
+      const activityId = activityLogger.logActivity(
+        activity as ActivitySnapshot,
+        category,
+        alignmentResult.alignment,
         commitment.mainThought
       )
 
@@ -88,7 +102,7 @@ async function main() {
       // Determine if intervention needed
       const shouldIntervene = interventionTrigger.shouldIntervene(
         pattern.patternType !== 'none' ? pattern : ppPattern,
-        alignment
+        alignmentResult
       )
 
       if (shouldIntervene) {
@@ -98,10 +112,10 @@ async function main() {
           await interventionTrigger.triggerIntervention(
             profile,
             pattern.patternType !== 'none' ? pattern : ppPattern,
-            alignment,
+            alignmentResult,
             `${activity.app} - ${activity.windowTitle}`,
             commitment.mainThought,
-            event.id || 0
+            activityId || 0
           )
         }
       }
