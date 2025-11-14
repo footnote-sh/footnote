@@ -227,6 +227,19 @@ export class DatabaseManager {
   }
 
   /**
+   * Update activity duration
+   */
+  updateActivityDuration(activityId: number, duration: number): void {
+    const stmt = this.db.prepare(`
+      UPDATE activity_records
+      SET duration = @duration
+      WHERE id = @activityId
+    `)
+
+    stmt.run({ activityId, duration })
+  }
+
+  /**
    * Get recent activity (last N hours)
    */
   getRecentActivity(hours: number = 2): ActivityRecordDB[] {

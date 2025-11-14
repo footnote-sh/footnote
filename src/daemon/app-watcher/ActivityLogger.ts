@@ -141,11 +141,9 @@ export class ActivityLogger {
       duration = Math.floor((new Date().getTime() - this.activityStartTime.getTime()) / 1000)
     }
 
-    if (duration !== undefined) {
-      // Use raw SQL to update duration
-      // Note: DatabaseManager doesn't have updateActivity method yet
-      // We'll add it or use raw SQL here
-      // For now, skip the update (duration will be calculated from timestamps)
+    if (duration !== undefined && activityId !== null) {
+      // Update duration in database
+      this.db.updateActivityDuration(activityId, duration)
     }
   }
 }

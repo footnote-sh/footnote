@@ -218,8 +218,18 @@ export function checkFocusRoute(stateManager: StateManager, commitmentStore: Com
     )
 
     try {
-      // Create analyzer (in production, use real analyzer)
-      const analyzer = new MockAnalyzer()
+      // Create analyzer - use AI if available, otherwise fall back to keyword matching
+      let analyzer: BaseAnalyzer
+      try {
+        // Try to create AI analyzer if API keys are configured
+        const { AnalyzerFactory } = await import('../../analyzers/AnalyzerFactory.js')
+        analyzer = AnalyzerFactory.createAuto()
+        request.log.info(`Using AI analyzer: ${analyzer.getProvider()}`)
+      } catch {
+        // Fall back to MockAnalyzer if no API keys configured
+        analyzer = new MockAnalyzer()
+        request.log.info('Using keyword-based analyzer (no AI API keys configured)')
+      }
 
       // Analyze the request
       const analysisResult = await analyzer.analyze({
