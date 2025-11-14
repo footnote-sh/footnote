@@ -70,6 +70,11 @@ export class InterventionTrigger {
       return false
     }
 
+    // Don't intervene if user is on_track (in dev tools or aligned with commitment)
+    if (alignment.alignment === 'on_track') {
+      return false
+    }
+
     // Check cooldown period
     const lastIntervention = this.lastInterventionTime.get(pattern.patternType)
     if (lastIntervention) {
@@ -107,8 +112,11 @@ export class InterventionTrigger {
       commitment
     )
 
-    // Show notification
-    const userResponse = await this.notificationManager.showIntervention(intervention, commitment)
+    // Show blocking intervention dialog (modal that requires response)
+    const userResponse = await this.notificationManager.showBlockingIntervention(
+      intervention,
+      commitment
+    )
 
     // Log intervention to database
     const interventionId = this.db.insertIntervention({

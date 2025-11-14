@@ -160,30 +160,16 @@ export class AppWatcher extends EventEmitter {
       // Get current activity from platform
       const activity = await this.platformWatcher.getCurrentActivity()
 
-      // TODO: Categorize activity
-      const category = 'other' // Placeholder - will implement categorization
+      // Emit activity change event (daemon will handle alignment check and logging)
+      this.emit('activity-changed', {
+        id: null, // Will be set by daemon after logging
+        activity,
+        category: 'other', // Will be determined by daemon
+        alignment: 'on_track', // Will be determined by daemon
+      })
 
-      // TODO: Check alignment with commitment
-      const alignment = 'on_track' // Placeholder - will implement alignment check
-
-      // TODO: Get current commitment
-      const commitment = 'Default commitment' // Placeholder
-
-      // Log activity
-      const activityId = this.activityLogger.logActivity(activity, category, alignment, commitment)
-
-      // Emit activity change event (if new activity)
-      if (activityId !== null) {
-        this.emit('activity-changed', {
-          id: activityId,
-          activity,
-          category,
-          alignment,
-        })
-
-        // TODO: Trigger pattern analysis
-        // TODO: Trigger intervention if needed
-      }
+      // Note: Activity logging moved to daemon event handler
+      // This allows daemon to perform proper alignment check before logging
     } catch (error) {
       this.emit('error', error as Error)
       console.error('Error polling activity:', error)
